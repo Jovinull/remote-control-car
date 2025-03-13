@@ -2,18 +2,14 @@
 import { createContext, useEffect, useState, ReactNode } from "react";
 import mqtt, { MqttClient as MqttJsClient, IClientOptions } from "mqtt";
 
-// Configuração do HiveMQ Cloud
-const MQTT_BROKER = "wss://3a0402e73e714189a5fdf292baf01769.s1.eu.hivemq.cloud:8884/mqtt";
-const MQTT_TOPIC = "esp32/car/controls";
-
-// 🔐 Credenciais do HiveMQ Cloud
-const MQTT_OPTIONS: IClientOptions = {
-  username: "jovinull", // 🔑 Substitua pelo SEU usuário
-  password: "99043425Felipe", // 🔑 Substitua pela SUA senha
-  clean: true,
-  reconnectPeriod: 1000,
-  connectTimeout: 30 * 1000,
-};
+// 🛠️ Carregar variáveis de ambiente
+const MQTT_BROKER = process.env.NEXT_PUBLIC_MQTT_BROKER || "wss://default-broker.com:8884/mqtt";
+const MQTT_TOPIC = process.env.NEXT_PUBLIC_MQTT_TOPIC || "esp32/car/controls";
+const MQTT_USERNAME = process.env.NEXT_PUBLIC_MQTT_USERNAME || "";
+const MQTT_PASSWORD = process.env.NEXT_PUBLIC_MQTT_PASSWORD || "";
+const MQTT_CONNECT_TIMEOUT = Number(process.env.NEXT_PUBLIC_MQTT_CONNECT_TIMEOUT) || 3000;
+const MQTT_RECONNECT_PERIOD = Number(process.env.NEXT_PUBLIC_MQTT_RECONNECT_PERIOD) || 0;
+const MQTT_KEEPALIVE = Number(process.env.NEXT_PUBLIC_MQTT_KEEPALIVE) || 10;
 
 // 🔥 Criamos um tipo para definir corretamente o contexto MQTT
 interface MqttContextType {
@@ -21,13 +17,11 @@ interface MqttContextType {
   isConnected: boolean;
 }
 
-// Criamos o contexto MQTT com um valor inicial válido
 export const MqttContext = createContext<MqttContextType>({
   client: null,
   isConnected: false,
 });
 
-// Define o tipo correto para `children`
 interface MqttProviderProps {
   children: ReactNode;
 }
@@ -38,6 +32,16 @@ export default function MqttProvider({ children }: MqttProviderProps) {
 
   useEffect(() => {
     console.log("🔌 Tentando conectar ao MQTT:", MQTT_BROKER);
+
+    const MQTT_OPTIONS: IClientOptions = {
+      username: MQTT_USERNAME,
+      password: MQTT_PASSWORD,
+      reconnectPeriod: MQTT_RECONNECT_PERIOD,
+      connectTimeout: MQTT_CONNECT_TIMEOUT,
+      keepalive: MQTT_KEEPALIVE,
+      resubscribe: true,
+    };
+
     const newClient = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 
     newClient.on("connect", () => {
