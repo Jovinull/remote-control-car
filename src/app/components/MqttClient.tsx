@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import mqtt, { MqttClient as MqttJsClient, IClientOptions } from "mqtt";
 
-// 🔧 Configuração do HiveMQ Cloud
-const MQTT_BROKER = "wss://3a0402e73e714189a5fdf292baf01769.s1.eu.hivemq.cloud:8884/mqtt";
-const MQTT_TOPIC = "esp32/car/controls";
+// Configuração do HiveMQ Cloud
+const MQTT_BROKER = process.env.NEXT_PUBLIC_MQTT_BROKER!;
+const MQTT_TOPIC = process.env.NEXT_PUBLIC_MQTT_TOPIC!;
 
-// 🔐 Substitua com suas credenciais
+// Substitua com suas credenciais
 const MQTT_OPTIONS: IClientOptions = {
   username: "jovinull", // Seu usuário do HiveMQ Cloud
   password: "99043425Felipe", // Sua senha do HiveMQ Cloud
@@ -21,12 +21,12 @@ export default function MqttClient() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    console.log("🔌 Tentando conectar ao MQTT:", MQTT_BROKER);
+    console.log("Tentando conectar ao MQTT:", MQTT_BROKER);
 
     const newClient = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 
     newClient.on("connect", () => {
-      console.log("✅ Conectado ao MQTT!");
+      console.log("Conectado ao MQTT!");
       setIsConnected(true);
       newClient.subscribe(MQTT_TOPIC, (err) => {
         if (err) console.error("Erro ao se inscrever no tópico:", err);
@@ -35,13 +35,13 @@ export default function MqttClient() {
 
     newClient.on("message", (topic, message) => {
       if (topic === MQTT_TOPIC) {
-        console.log("📩 Mensagem recebida:", message.toString());
+        console.log("Mensagem recebida:", message.toString());
         setMessage(message.toString());
       }
     });
 
     newClient.on("error", (err) => {
-      console.error("🚨 Erro na conexão MQTT:", err);
+      console.error("Erro na conexão MQTT:", err);
       setIsConnected(false);
     });
 
@@ -59,8 +59,8 @@ export default function MqttClient() {
 
   return (
     <div className="p-2 text-center bg-gray-100 dark:bg-gray-900 rounded-lg shadow-md">
-      <p className="text-sm">{isConnected ? "🔗 Conectado ao MQTT" : "❌ Desconectado"}</p>
-      {message && <p className="text-xs mt-2">📩 Última mensagem: {message}</p>}
+      <p className="text-sm">{isConnected ? "Conectado ao MQTT" : "Desconectado"}</p>
+      {message && <p className="text-xs mt-2">Última mensagem: {message}</p>}
     </div>
   );
 }
