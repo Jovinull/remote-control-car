@@ -2,7 +2,7 @@
 import { createContext, useEffect, useState, ReactNode } from "react";
 import mqtt, { MqttClient as MqttJsClient, IClientOptions } from "mqtt";
 
-// 🛠️ Pegando valores do .env
+// Pegando valores do .env
 const MQTT_BROKER = process.env.NEXT_PUBLIC_MQTT_BROKER!;
 const MQTT_TOPIC = process.env.NEXT_PUBLIC_MQTT_TOPIC!;
 const MQTT_USERNAME = process.env.NEXT_PUBLIC_MQTT_USERNAME!;
@@ -39,29 +39,29 @@ export default function MqttProvider({ children }: MqttProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    console.log("🚀 Tentando conectar ao MQTT:", MQTT_BROKER);
+    console.log("Tentando conectar ao MQTT:", MQTT_BROKER);
 
     const newClient = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 
     newClient.on("connect", () => {
-      console.log("✅ Conectado ao MQTT!");
+      console.log("Conectado ao MQTT!");
       setIsConnected(true);
       newClient.subscribe(MQTT_TOPIC, (err) => {
-        if (err) console.error("❌ Erro ao se inscrever no tópico:", err);
+        if (err) console.error("Erro ao se inscrever no tópico:", err);
       });
     });
 
     newClient.on("error", (err) => {
-      console.error("🚨 Erro na conexão MQTT:", err);
+      console.error("Erro na conexão MQTT:", err);
       setIsConnected(false);
     });
 
     newClient.on("offline", () => {
-      console.warn("⚠️ Cliente ficou offline, tentando reconectar...");
+      console.warn("Cliente ficou offline, tentando reconectar...");
     });
 
     newClient.on("close", () => {
-      console.warn("🔌 Conexão MQTT fechada, tentando reconectar...");
+      console.warn("Conexão MQTT fechada, tentando reconectar...");
       setIsConnected(false);
     });
 
