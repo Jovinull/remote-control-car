@@ -10,6 +10,7 @@ const MQTT_TOPIC = process.env.NEXT_PUBLIC_MQTT_TOPIC!;
 export default function ArrowControls() {
   const { client, isConnected } = useContext(MqttContext);
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
+  const [lastCommand, setLastCommand] = useState<string | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -17,8 +18,9 @@ export default function ArrowControls() {
     if (activeDirection && isConnected && client) {
       interval = setInterval(() => {
         client.publish(MQTT_TOPIC, activeDirection, { qos: 0, retain: false });
-        console.log(`Enviando comando contínuo: ${activeDirection}`);
-      }, 100); // Comando enviado a cada 100ms
+        setLastCommand(activeDirection);
+        console.log(`📤 Enviando comando contínuo: ${activeDirection}`);
+      }, 100);
     }
 
     return () => {
@@ -28,7 +30,7 @@ export default function ArrowControls() {
 
   const handlePress = (direction: string) => {
     if (!isConnected) {
-      console.error("Tentando enviar comando antes da conexão MQTT!");
+      console.error("🚨 Tentando enviar comando antes da conexão MQTT!");
       return;
     }
     setActiveDirection(direction);
@@ -40,19 +42,29 @@ export default function ArrowControls() {
 
   const handleBrake = () => {
     if (!isConnected || !client) return;
-    
-    console.log("Aplicando freio, limpando o tópico...");
+
+    console.log("🛑 Aplicando freio, limpando o tópico...");
     client.publish(MQTT_TOPIC, "", { qos: 0, retain: true }); // Apaga qualquer comando anterior
+    setLastCommand("Freio aplicado");
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-6">
+      {/* Indicador de Último Comando */}
+      <div className="text-white text-lg font-semibold bg-gray-800 px-4 py-2 rounded-md shadow-md">
+        Último comando: {lastCommand}
+      </div>
+
+      {/* Controles de Direção */}
       <div className="grid grid-cols-3 gap-4">
         <button
           onMouseDown={() => handlePress("LEFT")}
           onMouseUp={handleRelease}
           onMouseLeave={handleRelease}
-          className="p-6 bg-blue-600 text-white rounded-lg shadow-xl flex items-center justify-center hover:bg-blue-700 active:scale-90 transition-transform duration-75"
+          className={`p-6 text-white rounded-lg shadow-xl flex items-center justify-center transition-transform duration-100 ${activeDirection === "LEFT"
+              ? "bg-blue-700 animate-pulse scale-105"
+              : "bg-blue-600 hover:bg-blue-700 active:scale-95"
+            }`}
         >
           <FaLongArrowAltLeft size={40} />
         </button>
@@ -61,7 +73,10 @@ export default function ArrowControls() {
           onMouseDown={() => handlePress("UP")}
           onMouseUp={handleRelease}
           onMouseLeave={handleRelease}
-          className="p-6 bg-green-600 text-white rounded-lg shadow-xl flex items-center justify-center hover:bg-green-700 active:scale-90 transition-transform duration-75"
+          className={`p-6 text-white rounded-lg shadow-xl flex items-center justify-center transition-transform duration-100 ${activeDirection === "UP"
+              ? "bg-green-700 animate-pulse scale-105"
+              : "bg-green-600 hover:bg-green-700 active:scale-95"
+            }`}
         >
           <FaLongArrowAltUp size={40} />
         </button>
@@ -70,7 +85,10 @@ export default function ArrowControls() {
           onMouseDown={() => handlePress("RIGHT")}
           onMouseUp={handleRelease}
           onMouseLeave={handleRelease}
-          className="p-6 bg-red-600 text-white rounded-lg shadow-xl flex items-center justify-center hover:bg-red-700 active:scale-90 transition-transform duration-75"
+          className={`p-6 text-white rounded-lg shadow-xl flex items-center justify-center transition-transform duration-100 ${activeDirection === "RIGHT"
+              ? "bg-red-700 animate-pulse scale-105"
+              : "bg-red-600 hover:bg-red-700 active:scale-95"
+            }`}
         >
           <FaLongArrowAltRight size={40} />
         </button>
@@ -79,7 +97,10 @@ export default function ArrowControls() {
           onMouseDown={() => handlePress("DOWN")}
           onMouseUp={handleRelease}
           onMouseLeave={handleRelease}
-          className="col-span-3 p-6 bg-yellow-500 text-white rounded-lg shadow-xl flex items-center justify-center hover:bg-yellow-600 active:scale-90 transition-transform duration-75"
+          className={`col-span-3 p-6 text-white rounded-lg shadow-xl flex items-center justify-center transition-transform duration-100 ${activeDirection === "DOWN"
+              ? "bg-yellow-700 animate-pulse scale-105"
+              : "bg-yellow-500 hover:bg-yellow-600 active:scale-95"
+            }`}
         >
           <FaLongArrowAltDown size={40} />
         </button>
