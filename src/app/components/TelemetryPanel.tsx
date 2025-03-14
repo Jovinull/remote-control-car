@@ -2,9 +2,9 @@
 import { useState, useEffect, useContext } from "react";
 import { MqttContext } from "./MqttProvider";
 
-// Tópicos MQTT para telemetria do ESP32
-const TELEMETRY_TOPIC_VELOCITY = "esp32/car/velocity";
-const TELEMETRY_TOPIC_BATTERY = "esp32/car/battery";
+// Tópicos MQTT vindos do .env
+const TELEMETRY_TOPIC_VELOCITY = process.env.NEXT_PUBLIC_MQTT_TOPIC_VELOCITY!;
+const TELEMETRY_TOPIC_BATTERY = process.env.NEXT_PUBLIC_MQTT_TOPIC_BATTERY!;
 
 export default function TelemetryPanel() {
   const { client, isConnected } = useContext(MqttContext);
@@ -36,14 +36,13 @@ export default function TelemetryPanel() {
 
   return (
     <div className="w-full max-w-md p-4 bg-gray-900 text-white rounded-lg shadow-lg">
+      <h2 className="text-lg font-semibold text-center mb-4">Painel de Telemetria</h2>
 
-      {/* Velocidade */}
       <div className="flex justify-between p-2 bg-gray-800 rounded-md mb-2">
         <span className="font-medium">Velocidade:</span>
         <span className="text-yellow-400">{velocity || "Nenhum dado recebido"}</span>
       </div>
 
-      {/* Bateria */}
       <div className="flex justify-between p-2 bg-gray-800 rounded-md">
         <span className="font-medium">Bateria:</span>
         <span className="text-green-400">{battery || "Nenhum dado recebido"}</span>
